@@ -1,0 +1,94 @@
+buildscript {
+	ext {
+		//springBootVersion = '2.0.1.RELEASE'
+		springBootVersion = '2.0.0.M5'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+		maven { url "https://plugins.gradle.org/m2/" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "io.franzbecker:gradle-lombok:1.14"
+	}
+}
+
+plugins {
+	id "com.gorylenko.gradle-git-properties" version "1.4.17"
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'io.franzbecker.gradle-lombok' //Needed to make Lombok work with Eclipse
+
+group = 'com.lucas.learningspringboot'
+
+jar {
+	baseName = 'learning-spring-boot'
+	version = '0.0.1-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+	maven { url "https://dl.bintray.com/rabbitmq/maven-milestones/" }
+}
+
+configurations {
+	all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+//	all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-validation'
+	all*.exclude group: 'org.springframework', module: 'spring-webmvc'
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+	compile('org.springframework.boot:spring-boot-starter-webflux')
+	compile('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	
+	compile('org.springframework.cloud:spring-cloud-starter-stream-rabbit')
+	compile('org.springframework.cloud:spring-cloud-stream-reactive')
+	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+    compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')
+	
+	compile('org.synchronoss.cloud:nio-multipart-parser:1.1.0')
+	compile("org.seleniumhq.selenium:htmlunit-driver")
+	compile("org.seleniumhq.selenium:selenium-java")
+	compile("org.springframework.boot:spring-boot-devtools") 
+	
+	compileOnly('org.projectlombok:lombok')
+	
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	//testCompile('org.springframework.amqp:spring-rabbit-test')
+	testCompile('org.springframework.cloud:spring-cloud-stream-test-support')
+	testCompile('io.projectreactor:reactor-test')
+	testCompile("de.flapdoodle.embed:de.flapdoodle.embed.mongo") 
+	testCompile('com.googlecode.junit-toolbox:junit-toolbox:2.4')
+}
+
+springBoot {
+	buildInfo()
+}
+
+ext {
+	//springCloudVersion = 'Finchley.SR1'
+	springCloudVersion = 'Finchley.M3'
+	springCloudStreamVersion = 'Elmhurst.M2'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-stream-dependencies:${springCloudStreamVersion}"
+	}
+}
+

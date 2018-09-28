@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xlmns:th="http://thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<title>Learning Spring Boot: Springlr</title>
+	<link rel="stylesheet" href="/main.css"/>
+</head>
+<body>
+	<h1>Springlr</h1>
+	<h3>With LiveReload! WOOSH!</h3>
+	<div>
+		<table>
+			<thead>
+				<tr>
+					<th>Id</th> <th>Name</th> <th>Image</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="image : ${images}">
+					<td th:text="${image.id}" />
+					<td th:text="${image.name}" />
+					<td>
+						<a th:href="@{'/images/' + ${image.name} + '/raw'}">
+							<img th:src="@{'/images/' + ${image.name} + '/raw'}" class="thumbnail" />
+						</a>
+					</td>
+					<td>
+						<form th:method="delete" th:action="@{'/images/' + ${image.name}}">
+							<input type="submit" value="Delete" />
+						</form>
+					</td>
+					<td>
+						<ul>
+							<li th:each="comment : ${image.comments}"
+								th:text="${comment.comment}"></li>
+						</ul>
+					</td>
+					<td>
+						<form th:method="post" th:action="@{'/comments'}">
+							<input name="comment" value="" type="text"/>
+							<input name="imageId" th:value="${image.id}" type="hidden" />
+							<input type="submit" />
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		
+		<form method="post" enctype="multipart/form-data" action="/images">
+			<p><input type="file" name="file" /></p>
+			<p><input type="submit" name="Upload" /></p>
+		</form>
+	</div>
+</body>
+</html>
