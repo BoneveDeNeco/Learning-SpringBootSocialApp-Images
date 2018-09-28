@@ -7,6 +7,8 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,10 +18,14 @@ import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfigurati
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -28,11 +34,11 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
 
 import com.lucas.learningspringboot.SpringBootSocialApp.HomeController;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.Comment;
-import com.lucas.learningspringboot.SpringBootSocialApp.images.CommentReaderRepository;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.Image;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.ImageService;
 
@@ -45,7 +51,6 @@ import reactor.core.publisher.Mono;
 public class HomeControllerTests {
 
 	private static final Comment A_COMMENT = new Comment("c1", "1", "A commentary");
-	private static final Flux<Comment> A_COMMENT_FLUX = Flux.just(A_COMMENT);
 	private static final Image AN_IMAGE = new Image("1", "Image 1");
 	private static final Flux<Image> AN_IMAGE_FLUX = Flux.just(AN_IMAGE);
 	private static final String FILE_NAME = "image.jpg";
@@ -61,7 +66,7 @@ public class HomeControllerTests {
 	ImageService imageService;
 	
 	@MockBean
-	CommentReaderRepository commentReaderRepository;
+	RestTemplate restTemplate;
 	
 	HomeController controller;
 	Model model;
@@ -72,7 +77,7 @@ public class HomeControllerTests {
 		when(imageService.createImage(any())).thenReturn(Mono.empty());
 		when(imageService.deleteImage(anyString())).thenReturn(Mono.empty());
 		
-		controller = new HomeController(imageService, commentReaderRepository);
+		controller = new HomeController(imageService, restTemplate);
 	}
 	
 	@Test
@@ -180,10 +185,10 @@ public class HomeControllerTests {
 	@Test
 	public void indexHandlerAddsImagesWithCommentsToPageModel() {
 		setupIndexMocks();
-		
 		model = new ExtendedModelMap();
 		
 		controller.index(model);
+		
 		Flux<HashMap<String, Object>> imageFlux = (Flux<HashMap<String, Object>>) model.asMap().get("images");
 		HashMap<String, Object> imageAttributes = (HashMap<String, Object>) imageFlux.blockFirst();
 		assertThat(imageAttributes).contains(
@@ -192,9 +197,20 @@ public class HomeControllerTests {
 				entry("comments", Arrays.asList(A_COMMENT)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void setupIndexMocks() {
 		when(imageService.findAllImages()).thenReturn(AN_IMAGE_FLUX);
-		when(commentReaderRepository.findByImageId("1")).thenReturn(A_COMMENT_FLUX);
+		
+		List<Comment> comments = Arrays.asList(A_COMMENT);
+		ResponseEntity<List<Comment>> response = new ResponseEntity<List<Comment>>(comments, HttpStatus.OK);
+		
+		when(restTemplate.exchange(
+				eq("http://COMMENTS/comments/{imageId}"),
+				eq(HttpMethod.GET),
+				isNull(),
+				any(ParameterizedTypeReference.class),
+				eq("1")))
+		.thenReturn(response);
 	}
 	
 	//@Test

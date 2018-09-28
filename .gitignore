@@ -1,6 +1,7 @@
 .gradle
 /build/
 /bin/
+/upload-dir/
 !gradle/wrapper/gradle-wrapper.jar
 
 ### STS ###
