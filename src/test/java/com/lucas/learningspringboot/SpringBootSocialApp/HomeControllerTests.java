@@ -39,6 +39,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 
 import com.lucas.learningspringboot.SpringBootSocialApp.HomeController;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.Comment;
+import com.lucas.learningspringboot.SpringBootSocialApp.images.CommentService;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.Image;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.ImageService;
 
@@ -68,6 +69,9 @@ public class HomeControllerTests {
 	@MockBean
 	RestTemplate restTemplate;
 	
+	@MockBean
+	CommentService commentService;
+	
 	HomeController controller;
 	Model model;
 	
@@ -77,7 +81,7 @@ public class HomeControllerTests {
 		when(imageService.createImage(any())).thenReturn(Mono.empty());
 		when(imageService.deleteImage(anyString())).thenReturn(Mono.empty());
 		
-		controller = new HomeController(imageService, restTemplate);
+		controller = new HomeController(imageService, restTemplate, commentService);
 	}
 	
 	@Test
@@ -197,20 +201,12 @@ public class HomeControllerTests {
 				entry("comments", Arrays.asList(A_COMMENT)));
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void setupIndexMocks() {
 		when(imageService.findAllImages()).thenReturn(AN_IMAGE_FLUX);
 		
 		List<Comment> comments = Arrays.asList(A_COMMENT);
-		ResponseEntity<List<Comment>> response = new ResponseEntity<List<Comment>>(comments, HttpStatus.OK);
 		
-		when(restTemplate.exchange(
-				eq("http://COMMENTS/comments/{imageId}"),
-				eq(HttpMethod.GET),
-				isNull(),
-				any(ParameterizedTypeReference.class),
-				eq("1")))
-		.thenReturn(response);
+		when(commentService.getComments(AN_IMAGE)).thenReturn(comments);
 	}
 	
 	//@Test

@@ -1,6 +1,7 @@
 package com.lucas.learningspringboot.SpringBootSocialApp;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,8 +24,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import com.lucas.learningspringboot.SpringBootSocialApp.images.Comment;
+import com.lucas.learningspringboot.SpringBootSocialApp.images.CommentService;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.Image;
 import com.lucas.learningspringboot.SpringBootSocialApp.images.ImageService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -36,11 +39,13 @@ public class HomeController {
 	
 	private final ImageService imageService;
 	private final RestTemplate restTemplate;
+	private final CommentService commentService;
 	
 	@Autowired
-	public HomeController(ImageService imageService, RestTemplate restTemplate) {
+	public HomeController(ImageService imageService, RestTemplate restTemplate, CommentService commentService) {
 		this.imageService = imageService;
 		this.restTemplate = restTemplate;
+		this.commentService = commentService;
 	}
 	
 	@GetMapping(value = BASE_PATH + "/" + FILENAME + "/raw",
@@ -88,14 +93,9 @@ public class HomeController {
 					 * RestTemplate is blocking, but supports Eureka logical hostname resolution.
 					 * Consider using to WebClient in the future, when it supports logical hostname resolution
 					 */
-					map.put("comments", restTemplate.exchange(
-							"http://COMMENTS/comments/{imageId}",
-							HttpMethod.GET,
-							null,
-							new ParameterizedTypeReference<List<Comment>>() {},
-							image.getId()).getBody());
+					map.put("comments", commentService.getComments(image));
 					return map;
 				}));
 		return Mono.just("index");
 	}
-}
+} 
