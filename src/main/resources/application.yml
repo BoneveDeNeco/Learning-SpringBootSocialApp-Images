@@ -1,6 +1,4 @@
 spring:
-    application:
-        name: images
     cloud:
         stream:
             bindings:
@@ -49,8 +47,13 @@ spring:
                 output:
                     destination: learning-spring-boot-comments
                     group: learning-spring-boot
+    devtools:
+        restart:
+            enabled: true
+            additional-exclude: bin/**,build/**,ext/**,upload-dir/** 
                     
 eureka:
     client:
         serviceUrl:
             defaultZone: http://localhost:8761/eureka/
+

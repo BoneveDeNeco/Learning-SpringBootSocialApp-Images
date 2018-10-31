@@ -84,6 +84,10 @@ public class HomeController {
 					HashMap<String, Object> map = new HashMap<>();
 					map.put("id", image.getId());
 					map.put("name", image.getName());
+					/*
+					 * RestTemplate is blocking, but supports Eureka logical hostname resolution.
+					 * Consider using to WebClient in the future, when it supports logical hostname resolution
+					 */
 					map.put("comments", restTemplate.exchange(
 							"http://COMMENTS/comments/{imageId}",
 							HttpMethod.GET,
