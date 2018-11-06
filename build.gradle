@@ -59,6 +59,7 @@ dependencies {
 	compile('org.springframework.cloud:spring-cloud-stream-reactive')
 	compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
     compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')
+    compile('org.springframework.cloud:spring-cloud-starter-config')
 	
 	compile('org.synchronoss.cloud:nio-multipart-parser:1.1.0')
 	compile("org.seleniumhq.selenium:htmlunit-driver")
