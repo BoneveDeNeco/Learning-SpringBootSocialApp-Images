@@ -25,14 +25,13 @@ public class CommentServiceTests {
 	
 	@Before
 	public void setup() {
+		restTemplate = mock(RestTemplate.class);
 		commentService = new CommentService(restTemplate);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Test
 	public void getsAllCommentsForImage() {
-		restTemplate = mock(RestTemplate.class);
-		
 		List<Comment> comments = Arrays.asList(A_COMMENT);
 		ResponseEntity<List<Comment>> response = new ResponseEntity<List<Comment>>(comments, HttpStatus.OK);
 		
