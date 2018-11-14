@@ -42,9 +42,6 @@ public class CommentControllerTests {
 	WebTestClient webTestClient;
 	
 	@MockBean
-	RabbitTemplate rabbitTemplate;
-	
-	@MockBean
 	CommentMessageSender sender;
 	
 	@Test
@@ -54,10 +51,9 @@ public class CommentControllerTests {
 	}
 	
 	@Test
-	public void addCommentHandlerRedirectsToIndex() {
+	public void addCommentHandlerRespondesWithEmptySuccessResponse() {
 		postComment(A_COMMENT)
-			.expectStatus().isSeeOther()
-			.expectHeader().valueEquals(HttpHeaders.LOCATION, "/");
+			.expectStatus().isNoContent();
 	}
 	
 	@Test
@@ -71,7 +67,7 @@ public class CommentControllerTests {
 	public void keepsTrackOfNumberOfCommentsProduced() {
 		//MeterRegistry persists count throughout the tests, making the count uncertain. This test needs a brand new MeterRegistry
 		MeterRegistry meterRegistry = new SimpleMeterRegistry();
-		CommentController controller = new CommentController(rabbitTemplate, meterRegistry, sender);
+		CommentController controller = new CommentController(meterRegistry, sender);
 		
 		controller.addComment(Mono.just(A_COMMENT)).subscribe();
 		

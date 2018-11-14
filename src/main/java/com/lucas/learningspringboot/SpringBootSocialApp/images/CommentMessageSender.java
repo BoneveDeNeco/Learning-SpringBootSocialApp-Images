@@ -5,7 +5,9 @@ import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.cloud.stream.reactive.FluxSender;
 import org.springframework.cloud.stream.reactive.StreamEmitter;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,7 @@ public class CommentMessageSender {
 	
 	public FluxSink<Message<Comment>> send(Comment comment) {
 		return commentSink.next(MessageBuilder.withPayload(comment)
+				.setHeader(MessageHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.build());
 	}
 	
