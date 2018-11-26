@@ -8,6 +8,11 @@
 <body>
 	<h1>Springlr</h1>
 	<h3>With LiveReload! WOOSH!</h3>
+	
+	<input id="username" type="text"/>
+	<button id="connect">Connect</button>
+	<button id="disconnect" style="display: none">Disconnect</button>
+	
 	<div>
 		<table>
 			<thead>
@@ -64,22 +69,6 @@
 	<script th:inline="javascript">
 	   /*<![CDATA[*/
 	   (function() {
-		   var socket = new WebSocket('ws://localhost:8200/topic/comments.new');
-		   socket.onopen = function(event) {
-			   console.log('Connected to chat service!');
-			   console.log(event);
-		   }
-		   socket.onmessage = function(event) {
-			   console.log('Received ' + event.data + '!');
-			   var parsedMessage = JSON.parse(event.data);
-			   var ul = document.getElementById(
-					   'comments-' + parsedMessage.imageId);
-			   var li = document.createElement('li');
-			   li.appendChild(
-					   document.createTextNode(parsedMessage.comment));
-			   ul.appendChild(li);
-		   }
-		   
 		   //Register handler to each button to make an AJAX call
 		   document.querySelectorAll('button.comment').forEach(function(button) {
 			   button.addEventListener('click', function() {
@@ -99,26 +88,76 @@
 			   });
 		   });
 		   
-		   var outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new');
-		   //Post new chat messages
-		   outboundChatMessages.onopen = function(event) {
-			   document.getElementById('chatButton')
-			       .addEventListener('click', function() {
-			    	   var chatInput = document.getElementById('chatInput');
-			    	   console.log('Publishing "' + chatInput.value + '"');
-			    	   outboundChatMessages.send(chatInput.value);
-			    	   chatInput.value = '';
-			    	   chatInput.focus();
-			       });
-		   }
+		   var newComments = null;
+		   var outboundChatMessages = null;
+		   var inboundChatMessages = null;
 		   
-		   var inboundChatMessages = new WebSocket('ws://localhost:8200/topic/chatMessage.new');
-		   //Listen for new chat messages
-		   inboundChatMessages.onmessage = function(event) {
-			   console.log('Received ' + event.data);
-			   var chatDisplay = document.getElementById('chatDisplay');
-			   chatDisplay.value = chatDisplay.value + event.data + '\n';
-		   };
+		   document.getElementById('connect')
+		   .addEventListener('click', funciont() {
+			   document.getElementById('connect').style.display = 'none';
+			   document.getElementById('disconnect').style.display = 'inline';
+			   
+			   var usernameInput = document.getElementById('username');
+			   
+			   document.getElementById('chatBox').stlyle.display = 'inline';
+			   
+			   newComments = new WebSocket('ws://localhost:8200/topic/comments.new');
+	           newComments.onopen = function(event) {
+	               console.log('Connected to chat service!');
+	               console.log(event);
+	           }
+	           newComments.onmessage = function(event) {
+	               console.log('Received ' + event.data + '!');
+	               var parsedMessage = JSON.parse(event.data);
+	               var ul = document.getElementById(
+	                       'comments-' + parsedMessage.imageId);
+	               var li = document.createElement('li');
+	               li.appendChild(
+	                       document.createTextNode(parsedMessage.comment));
+	               ul.appendChild(li);
+	           }
+	           
+	           outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new');
+	           //Post new chat messages
+	           outboundChatMessages.onopen = function(event) {
+	               document.getElementById('chatButton')
+	                   .addEventListener('click', function() {
+	                       var chatInput = document.getElementById('chatInput');
+	                       console.log('Publishing "' + chatInput.value + '"');
+	                       outboundChatMessages.send(chatInput.value);
+	                       chatInput.value = '';
+	                       chatInput.focus();
+	                   });
+	           }
+	           
+	           inboundChatMessages = new WebSocket('ws://localhost:8200/topic/chatMessage.new?user=' + usernameInput.value);
+	           //Listen for new chat messages
+	           inboundChatMessages.onmessage = function(event) {
+	               console.log('Received ' + event.data);
+	               var chatDisplay = document.getElementById('chatDisplay');
+	               chatDisplay.value = chatDisplay.value + event.data + '\n';
+	           };
+		   });
+		   
+		   document.getElementById('disconnect')
+		   .addEventListener('click', function() {
+			  document.getElementById('connect').style.display = 'inline';
+			  document.getElementById('disconnect').style.display = 'none';
+			  document.getElementById('chatBox').style.display = 'none';
+			  
+			  if (newComments != null) {
+				  newComments.close();
+			  }
+			  
+			  if (outboundChatMessages != null) {
+				  outboundChatMessages.close();
+              }
+			  
+			  if (inboundChatMessages != null) {
+				  inboundChatMessages.close();
+              }
+		   });
+		   
 	   })();
 	   /*]]>*/
 	</script>
