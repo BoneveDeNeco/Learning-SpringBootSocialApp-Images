@@ -52,7 +52,7 @@
 			<p><input type="submit" name="Upload" /></p>
 		</form>
 		
-		<div id="chatBox">
+		<div id="chatBox" style="display: none">
 	       Greetings!
 	       <br/>
 	       <textarea id="chatDisplay" rows="10" cols="80" disabled="true"></textarea>
@@ -93,15 +93,15 @@
 		   var inboundChatMessages = null;
 		   
 		   document.getElementById('connect')
-		   .addEventListener('click', funciont() {
+		   .addEventListener('click', function() {
 			   document.getElementById('connect').style.display = 'none';
 			   document.getElementById('disconnect').style.display = 'inline';
 			   
 			   var usernameInput = document.getElementById('username');
 			   
-			   document.getElementById('chatBox').stlyle.display = 'inline';
+			   document.getElementById('chatBox').style.display = 'inline';
 			   
-			   newComments = new WebSocket('ws://localhost:8200/topic/comments.new');
+			   newComments = new WebSocket('ws://localhost:8200/topic/comments.new?user=' + usernameInput.value);
 	           newComments.onopen = function(event) {
 	               console.log('Connected to chat service!');
 	               console.log(event);
@@ -117,7 +117,7 @@
 	               ul.appendChild(li);
 	           }
 	           
-	           outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new');
+	           outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new?user=' + usernameInput.value);
 	           //Post new chat messages
 	           outboundChatMessages.onopen = function(event) {
 	               document.getElementById('chatButton')
@@ -136,7 +136,7 @@
 	               console.log('Received ' + event.data);
 	               var chatDisplay = document.getElementById('chatDisplay');
 	               chatDisplay.value = chatDisplay.value + event.data + '\n';
-	           };
+	           }
 		   });
 		   
 		   document.getElementById('disconnect')
